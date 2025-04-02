@@ -176,3 +176,35 @@ func sigmoidActivation() *activationFunc {
 
     return act
 }
+
+func linearActivation() *activationFunc {
+    act := &activationFunc{}
+
+    act.Forward = func(inputs m.Dense) {
+        act.inputs = inputs
+        act.output = inputs
+    }
+
+    act.Backward = func(dVals m.Dense) {
+        act.dInputs = dVals
+    }
+
+    return act
+}
+
+/*var stepActivation activationFunc = activationFunc{
+	forwardFunc: func(_, _ int, x float64) float64 {
+		if x > 0 {
+			return 1
+		}
+		return 0
+	},
+}
+
+var sigmoidActivation activationFunc = activationFunc{
+	forwardFunc: func(_, _ int, x float64) float64 { return 1.0 / (1.0 + math.Exp(-x)) },
+}
+
+var linearActivation activationFunc = activationFunc{
+	forwardFunc: func(_, _ int, x float64) float64 { return x },
+}*/

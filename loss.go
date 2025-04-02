@@ -99,26 +99,62 @@ func backwardsLossBinaryCrossEntropy(dVals m.Dense, target []float64) m.Dense {
 
     var dInputs m.Dense
     dInputs.Apply(func(i, j int, v float64) float64 {
-        return -((target[i] / v) - ((1-target[i])/(1-v))) / (float64(c))
+        return -((target[i] / v) - ((1-target[i])/(1-v))) / (float64(c*r))
     }, &dVals)
-    dInputs.Apply(func(_, _ int, v float64) float64 { return v / float64(r) }, &dInputs)
 
     return dInputs
 }
 
-/*var stepActivation activationFunc = activationFunc{
-	forwardFunc: func(_, _ int, x float64) float64 {
-		if x > 0 {
-			return 1
-		}
-		return 0
-	},
+func meanSquaredErrorLoss(inputs m.Dense, target []float64) m.Dense {
+    var squaredDiff m.Dense
+    squaredDiff.Apply(func(i, j int, v float64) float64 {
+        return math.Pow(target[i] - v, 2)
+    }, &inputs)
+
+    return squaredDiff
 }
 
-var sigmoidActivation activationFunc = activationFunc{
-	forwardFunc: func(_, _ int, x float64) float64 { return 1.0 / (1.0 + math.Exp(-x)) },
+func backwardsLossMeanSquaredError(dVals m.Dense, target []float64) m.Dense {
+    r, c := dVals.Dims()
+    if len(target) != r {
+        log.Fatal("target size mismatch with dvals")
+    }
+
+
+    var dInputs m.Dense
+    dInputs.Apply(func(i, j int, v float64) float64 {
+        return -2 * (target[i] - v) / float64(c*r)
+    }, &dVals)
+
+    return dInputs
 }
 
-var linearActivation activationFunc = activationFunc{
-	forwardFunc: func(_, _ int, x float64) float64 { return x },
-}*/
+func meanAbsErrorLoss(inputs m.Dense, target []float64) m.Dense {
+    var squaredDiff m.Dense
+    squaredDiff.Apply(func(i, j int, v float64) float64 {
+        return math.Abs(target[i] - v)
+    }, &inputs)
+
+    return squaredDiff
+}
+
+func backwardsLossMeanAbsError(dVals m.Dense, target []float64) m.Dense {
+    r, c := dVals.Dims()
+    if len(target) != r {
+        log.Fatal("target size mismatch with dvals")
+    }
+
+
+    var dInputs m.Dense
+    dInputs.Apply(func(i, j int, v float64) float64 {
+        if (target[i] - v) > 0 {
+            return 1 / float64(r * c)
+        } else if (target[i] - v) < 0 {
+            return -1 / float64(r * c)
+        } else {
+            return 0
+        }
+    }, &dVals)
+
+    return dInputs
+}
